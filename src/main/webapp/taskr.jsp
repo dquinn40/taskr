@@ -10,22 +10,20 @@
 <%@ page import="com.google.appengine.api.datastore.Key" %>
 <%@ page import="com.google.appengine.api.datastore.KeyFactory" %>
 <%@ page import="com.google.appengine.api.datastore.Query" %>
+<%@ page import="com.onix.taskr.util.DateFormatter" %>
+<%@ page import="java.util.Date" %>
 
 <%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <html>
     <head>
         <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"/>
+        <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.min.css"/>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-        <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
 
-        <script>
-            $(function() {
-                $( "#datepicker" ).datepicker();
-            });
-        </script>
     </head>
 
     <%
@@ -47,12 +45,13 @@
     %>
     <p>Hello!
         <a href="<%= userService.createLoginURL(request.getRequestURI()) %>">Sign in</a>
-        to include your name with greetings you post.</p>
+        to include your name with tasks.</p>
     <%
         }
     %>
 
     <%
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
         // Run an ancestor query to ensure we see the most up-to-date
@@ -61,54 +60,68 @@
         List<Entity> tasks = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
         if (tasks.isEmpty()) {
     %>
-    <p>Taskr '${fn:escapeXml(taskrName)}' has no messages.</p>
+    <p>Taskr '${fn:escapeXml(taskrName)}' has no tasks.</p>
     <%
     } else {
     %>
     <p>Tasks in Taskr '${fn:escapeXml(taskrName)}'.</p>
+    <table class="table table-striped">
+        <tr><th>Description</th><th>Due</th><th>Completed</th><th></th></tr>
     <%
         for (Entity task : tasks) {
             pageContext.setAttribute("task_description",
                     task.getProperty("description"));
             pageContext.setAttribute("task_due_date",
-                    task.getProperty("dueDate"));
+                    DateFormatter.format((Date)task.getProperty("dueDate")));
             pageContext.setAttribute("task_is_complete",
                     task.getProperty("complete"));
+            pageContext.setAttribute("task_id",
+                    task.getProperty("id"));
             if (task.getProperty("user") == null) {
-    %>
-                <p>An anonymous person wrote:</p>
-    <%
+
             } else {
                 pageContext.setAttribute("task_user",
                 task.getProperty("user"));
-    %>
-    <p><b>${fn:escapeXml(task_user.nickname)}</b> wrote:</p>
-    <%
             }
     %>
-    <blockquote>${fn:escapeXml(task_description)}</blockquote>
-    <blockquote>${fn:escapeXml(task_due_date)}</blockquote>
-    <blockquote>${fn:escapeXml(task_is_complete)}</blockquote>
+        <tr>
+            <form class="form-inline" action="/task" method="put">
+                <td><input type="text" placeholder="Description" class="input-large" name="description" value="${fn:escapeXml(task_description)}"/></td>
+                <td><input type="text" placeholder="Due Date" class="input-small" name="dueDate" value="${fn:escapeXml(task_due_date)}"></td>
+                <td><input type="checkbox" name="complete" value="${fn:escapeXml(task_is_complete)}"></td>
+                <td><button class="btn" type="submit">Update</button></td>
+                <input type="hidden" name="id" value="${fn:escapeXml(task_id)}"/>
+            </form>
+        </tr>
     <%
             }
         }
     %>
+    </table>
 
-    <form action="/create" method="post">
-        <div><label>Description: </label><input type="text" name="description"/></div>
-        <label>Due: </label><input type="text" name="dueDate" id="datepicker">
-        <label>Status: </label><input type="radio" name="complete" value="yes" checked>yes
-        <br>
-        <input type="radio" name="complete" value="no">no
-        <div><input type="submit" value="Post Task"/></div>
+    <form class="form-inline" action="/create" method="post">
+        <input type="text" placeholder="Description" class="input-large" name="description"/>
+        <input type="text" placeholder="Due Date" class="input-small" name="dueDate" id="datepicker">
+        <label class="checkbox">Complete:</label>
+        <input type="checkbox" name="complete">
+
+        <button class="btn" type="submit">Post Task</button>
         <input type="hidden" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
     </form>
 
-
-    <form action="/taskr.jsp" method="get">
-        <div><input type="text" name="taskrName" value="${fn:escapeXml(taskrName)}"/></div>
-        <div><input type="submit" value="Switch Taskr"/></div>
+    <form class="form-inline" action="/taskr.jsp" method="get">
+        <input type="text" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
+        <button class="btn" type="submit">Switch Taskr</button>
     </form>
+
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script>
+        $(function() {
+            $( "#datepicker" ).datepicker();
+        });
+    </script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
 
 </body>
 </html>

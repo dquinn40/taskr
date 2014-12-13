@@ -8,6 +8,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.onix.taskr.util.DateFormatter;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -25,14 +26,13 @@ public class CreateTaskServlet extends HttpServlet {
         UserService userService = UserServiceFactory.getUserService();
         User user = userService.getCurrentUser();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
         String taskrName = req.getParameter("taskrName");
         Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
         String description = req.getParameter("description");
         String complete = req.getParameter("complete");
         Date date;
         try {
-            date = sdf.parse(req.getParameter("dueDate"));
+            date = DateFormatter.parse(req.getParameter("dueDate"));
         } catch (ParseException pe) {
             date = new Date(0); // So I can quickly see date parsing is failing.
         }
