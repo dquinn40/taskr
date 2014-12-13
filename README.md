@@ -1,4 +1,4 @@
-appengine-skeleton
+Taskr
 =============================
 
-This is a generated application from the appengine-skeleton archetype.
+Where you go to get work done!
