@@ -6,15 +6,23 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" version="2.5">
     <servlet>
         <servlet-name>taskr</servlet-name>
-        <servlet-class>com.onix.taskr.web.TaskServlet</servlet-class>
+        <servlet-class>com.onix.taskr.web.TaskrServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>create</servlet-name>
         <servlet-class>com.onix.taskr.web.CreateTaskServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>update</servlet-name>
+        <servlet-class>com.onix.taskr.web.UpdateTaskServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>create</servlet-name>
         <url-pattern>/create</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>update</servlet-name>
+        <url-pattern>/update</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>taskr</servlet-name>

@@ -13,7 +13,7 @@ import java.util.Properties;
 /**
  * Created by dquinn40 on 12/13/14.
  */
-public class TaskServlet extends HttpServlet {
+public class TaskrServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

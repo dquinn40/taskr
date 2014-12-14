@@ -75,8 +75,8 @@
                     DateFormatter.format((Date)task.getProperty("dueDate")));
             pageContext.setAttribute("task_is_complete",
                     task.getProperty("complete"));
-            pageContext.setAttribute("task_id",
-                    task.getProperty("id"));
+            pageContext.setAttribute("task_key",
+                    KeyFactory.keyToString(task.getKey()));
             if (task.getProperty("user") == null) {
 
             } else {
@@ -85,12 +85,13 @@
             }
     %>
         <tr>
-            <form class="form-inline" action="/task" method="put">
-                <td><input type="text" placeholder="Description" class="input-large" name="description" value="${fn:escapeXml(task_description)}"/></td>
+            <form class="form-inline" action="/update" method="post">
+                <td><input type="text" placeholder="Description" class="input-xlarge" name="description" value="${fn:escapeXml(task_description)}"/></td>
                 <td><input type="text" placeholder="Due Date" class="input-small" name="dueDate" value="${fn:escapeXml(task_due_date)}"></td>
-                <td><input type="checkbox" name="complete" value="${fn:escapeXml(task_is_complete)}"></td>
+                <td><input type="checkbox" name="complete" <%if(task.getProperty("complete") != null && task.getProperty("complete").equals("on")){%>checked<%}%>></td>
                 <td><button class="btn" type="submit">Update</button></td>
-                <input type="hidden" name="id" value="${fn:escapeXml(task_id)}"/>
+                <input type="hidden" name="key" value="${fn:escapeXml(task_key)}"/>
+                <input type="hidden" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
             </form>
         </tr>
     <%
@@ -100,7 +101,7 @@
     </table>
 
     <form class="form-inline" action="/create" method="post">
-        <input type="text" placeholder="Description" class="input-large" name="description"/>
+        <input type="text" placeholder="Description" class="input-xlarge" name="description"/>
         <input type="text" placeholder="Due Date" class="input-small" name="dueDate" id="datepicker">
         <label class="checkbox">Complete:</label>
         <input type="checkbox" name="complete">

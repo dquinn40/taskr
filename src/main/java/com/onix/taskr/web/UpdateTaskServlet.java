@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
-public class CreateTaskServlet extends HttpServlet {
+public class UpdateTaskServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -21,7 +21,6 @@ public class CreateTaskServlet extends HttpServlet {
         User user = userService.getCurrentUser();
 
         String taskrName = req.getParameter("taskrName");
-        Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
         String description = req.getParameter("description");
         String complete = req.getParameter("complete");
         Date date;
@@ -30,14 +29,20 @@ public class CreateTaskServlet extends HttpServlet {
         } catch (ParseException pe) {
             date = new Date(0); // So I can quickly see date parsing is failing.
         }
-        Entity task = new Entity("Task", taskrKey);
-        task.setProperty("user", user);
-        task.setProperty("dueDate", date);
-        task.setProperty("description", description);
-        task.setProperty("complete", complete);
+
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        datastore.put(task);
+        try {
+            Entity task = datastore.get(KeyFactory.stringToKey(req.getParameter("key")));
+            task.setProperty("user", user);
+            task.setProperty("dueDate", date);
+            task.setProperty("description", description);
+            task.setProperty("complete", complete);
+
+            datastore.put(task);
+        } catch (Exception e) {
+            // Need to add some logging
+        }
 
         resp.sendRedirect("/taskr.jsp?taskrName=" + taskrName);
     }
