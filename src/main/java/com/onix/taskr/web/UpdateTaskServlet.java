@@ -35,6 +35,7 @@ public class UpdateTaskServlet extends HttpServlet {
         try {
             Entity task = datastore.get(KeyFactory.stringToKey(req.getParameter("key")));
             task.setProperty("user", user);
+            task.setProperty("userId", user.getUserId());
             task.setProperty("dueDate", date);
             task.setProperty("description", description);
             task.setProperty("complete", complete);

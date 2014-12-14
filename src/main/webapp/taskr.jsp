@@ -56,7 +56,8 @@
         Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
         // Run an ancestor query to ensure we see the most up-to-date
         // view of the Greetings belonging to the selected Guestbook.
-        Query query = new Query("Task", taskrKey).addSort("dueDate", Query.SortDirection.DESCENDING);
+        Query.Filter filter = new Query.FilterPredicate("userId", Query.FilterOperator.EQUAL, user.getUserId());
+        Query query = new Query("Task", taskrKey).setFilter(filter).addSort("dueDate", Query.SortDirection.DESCENDING);
         List<Entity> tasks = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
         if (tasks.isEmpty()) {
     %>
