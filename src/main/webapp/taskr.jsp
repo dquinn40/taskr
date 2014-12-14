@@ -34,8 +34,16 @@
         pageContext.setAttribute("taskrName", taskrName);
         UserService userService = UserServiceFactory.getUserService();
         User user = userService.getCurrentUser();
+        List<Entity> tasks = null;
         if (user != null) {
             pageContext.setAttribute("user", user);
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
+//        // Run an ancestor query to ensure we see the most up-to-date
+//        // view of the Greetings belonging to the selected Guestbook.
+            Query.Filter filter = new Query.FilterPredicate("userId", Query.FilterOperator.EQUAL, user.getUserId());
+            Query query = new Query("Task", taskrKey).setFilter(filter).addSort("dueDate", Query.SortDirection.DESCENDING);
+            tasks = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
     %>
 
     <p>Hello, ${fn:escapeXml(user.nickname)}! (You can
@@ -45,49 +53,55 @@
     %>
     <p>Hello!
         <a href="<%= userService.createLoginURL(request.getRequestURI()) %>">Sign in</a>
-        to include your name with tasks.</p>
+        to create tasks just for you too see.</p>
     <%
         }
     %>
 
     <%
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Key taskrKey = KeyFactory.createKey("Taskr", taskrName);
-        // Run an ancestor query to ensure we see the most up-to-date
-        // view of the Greetings belonging to the selected Guestbook.
-        Query.Filter filter = new Query.FilterPredicate("userId", Query.FilterOperator.EQUAL, user.getUserId());
-        Query query = new Query("Task", taskrKey).setFilter(filter).addSort("dueDate", Query.SortDirection.DESCENDING);
-        List<Entity> tasks = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
-        if (tasks.isEmpty()) {
+        if (tasks == null || tasks.isEmpty()) {
     %>
     <p>Taskr '${fn:escapeXml(taskrName)}' has no tasks.</p>
     <%
     } else {
     %>
     <p>Tasks in Taskr '${fn:escapeXml(taskrName)}'.</p>
+    <%}%>
+
+    <form class="form-inline" action="/taskr.jsp" method="get">
+        <input type="text" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
+        <button class="btn" type="submit">Switch Taskr</button>
+    </form>
+
+    <form class="form-inline" action="/create" method="post">
+        <input type="text" placeholder="Description" class="input-xxlarge" name="description"/>
+        <input type="text" placeholder="Due Date" class="input-small" name="dueDate" id="datepicker">
+        <label class="checkbox">Complete:</label>
+        <input type="checkbox" name="complete">
+
+        <button class="btn" type="submit">Post Task</button>
+        <input type="hidden" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
+    </form>
+
     <table class="table table-striped">
         <tr><th>Description</th><th>Due</th><th>Completed</th><th></th></tr>
     <%
-        for (Entity task : tasks) {
-            pageContext.setAttribute("task_description",
-                    task.getProperty("description"));
-            pageContext.setAttribute("task_due_date",
-                    DateFormatter.format((Date)task.getProperty("dueDate")));
-            pageContext.setAttribute("task_is_complete",
-                    task.getProperty("complete"));
-            pageContext.setAttribute("task_key",
-                    KeyFactory.keyToString(task.getKey()));
-            if (task.getProperty("user") == null) {
+        if(tasks != null && !tasks.isEmpty()) {
 
-            } else {
-                pageContext.setAttribute("task_user",
-                task.getProperty("user"));
-            }
+
+            for (Entity task : tasks) {
+                pageContext.setAttribute("task_description",
+                        task.getProperty("description"));
+                pageContext.setAttribute("task_due_date",
+                        DateFormatter.format((Date)task.getProperty("dueDate")));
+                pageContext.setAttribute("task_is_complete",
+                        task.getProperty("complete"));
+                pageContext.setAttribute("task_key",
+                        KeyFactory.keyToString(task.getKey()));
     %>
         <tr>
             <form class="form-inline" action="/update" method="post">
-                <td><input type="text" placeholder="Description" class="input-xlarge" name="description" value="${fn:escapeXml(task_description)}"/></td>
+                <td><input type="text" placeholder="Description" class="input-xxlarge" name="description" value="${fn:escapeXml(task_description)}"/></td>
                 <td><input type="text" placeholder="Due Date" class="input-small" name="dueDate" value="${fn:escapeXml(task_due_date)}"></td>
                 <td><input type="checkbox" name="complete" <%if(task.getProperty("complete") != null && task.getProperty("complete").equals("on")){%>checked<%}%>></td>
                 <td><button class="btn" type="submit">Update</button></td>
@@ -100,21 +114,6 @@
         }
     %>
     </table>
-
-    <form class="form-inline" action="/create" method="post">
-        <input type="text" placeholder="Description" class="input-xlarge" name="description"/>
-        <input type="text" placeholder="Due Date" class="input-small" name="dueDate" id="datepicker">
-        <label class="checkbox">Complete:</label>
-        <input type="checkbox" name="complete">
-
-        <button class="btn" type="submit">Post Task</button>
-        <input type="hidden" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
-    </form>
-
-    <form class="form-inline" action="/taskr.jsp" method="get">
-        <input type="text" name="taskrName" value="${fn:escapeXml(taskrName)}"/>
-        <button class="btn" type="submit">Switch Taskr</button>
-    </form>
 
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
