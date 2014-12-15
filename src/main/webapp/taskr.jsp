@@ -14,7 +14,6 @@
 <%@ page import="java.util.Date" %>
 
 <%@ page import="java.util.List" %>
-<%@ page import="java.text.SimpleDateFormat" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <html>
@@ -87,8 +86,6 @@
         <tr><th>Description</th><th>Due</th><th>Completed</th><th></th></tr>
     <%
         if(tasks != null && !tasks.isEmpty()) {
-
-
             for (Entity task : tasks) {
                 pageContext.setAttribute("task_description",
                         task.getProperty("description"));
