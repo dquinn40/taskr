@@ -27,7 +27,7 @@ public class TaskEntityBuilder {
             date = new Date(0); // So I can quickly see date parsing is failing.
         }
         Entity task = new Entity("Task", taskrKey);
-        task.setProperty("userId", user.getUserId());
+        task.setProperty("userId", user != null ? user.getUserId() : "unknown");
         task.setProperty("user", user);
         task.setProperty("dueDate", date);
         task.setProperty("description", description);
