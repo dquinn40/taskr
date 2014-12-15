@@ -46,7 +46,7 @@
     %>
 
     <p>Hello, ${fn:escapeXml(user.nickname)}! (You can
-        <a href="<%= userService.createLogoutURL(request.getRequestURI()) %>">sign out</a>.)</p>
+        <a href="<%= userService.createLogoutURL(userService.createLoginURL(request.getRequestURI())) %>">sign out</a>.)</p>
     <%
         } else {
     %>
